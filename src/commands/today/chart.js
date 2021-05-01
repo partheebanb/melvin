@@ -26,16 +26,37 @@ const plugin = {
 };
 
 
-const plot = async (canvas, ticker, labels, data) => {
+const getCloses = (apiResponse, n) => {
+  // apiResponse: The data obtained from the AlphaVantage API. Header should be removed in advance
+  // n: The first n closes(ie the latest n time periods) will be returned
+  const dates = Object.keys(apiResponse).slice(0, n).reverse()
+  const prices = Object.values(apiResponse).slice(0, n).reverse()
+  let closes = []
+
+  for (const day in prices) {
+    console.log(prices[day]['5. adjusted close'])
+    closes.push(prices[day]['5. adjusted close'])
+  }
+  return {
+    dates: dates,
+    closes: closes
+  }
+}
+
+const plot = async (canvas, ticker, dates, prices) => {
+  // canvas: The canvas on which the graph will be plotted
+  // ticker: The ticker of the security. Will be added to the label of the graph
+  // dates: The dates/times of corresponding to the prices. Plotted on the x-asis
+  // prices: The prices which will be plotted on the y-axis
   const chartConfig = {
     type: 'line',
     
     data: {
-      labels: labels,
+      labels: dates,
       datasets: [
         {
           label: `Stock Price History for ${ticker}`,
-          data: data,
+          data: prices,
           backgroundColor: '#7280d9'
         }
       ]
@@ -56,7 +77,7 @@ module.exports = class ChartCommand extends Commando.Command {
     constructor(client) {
         super(client, {
             name: 'chart', 
-            aliases: ['c', 'plot'],
+            aliases: ['c', 'plot', 'graph'],
             group: 'chart',
             memberName: 'chart',
             description: "Display chart for today's trading data",
@@ -76,67 +97,41 @@ module.exports = class ChartCommand extends Commando.Command {
           height
         }
       )
-      console.log(args[0])
       if (d === 'month') {
         axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&apikey=${params.access_key}`)
                 .then(async response => {
-                console.log('gotta tha response')
                 const apiResponse = response.data['Time Series (Daily)'];
-                const dates = Object.keys(apiResponse).slice(0, 22).reverse()
-                const prices = Object.values(apiResponse).slice(0, 22).reverse()
-                let close = []
+                const {dates, closes} = getCloses(apiResponse, 22)
 
-                for (const day in prices) {
-                  console.log(prices[day]['5. adjusted close'])
-                  close.push(prices[day]['5. adjusted close'])
-
-                }
-
-                const attachment = await plot(canvas, ticker, dates, close)
+                const attachment = await plot(canvas, ticker, dates, closes)
 
                 message.channel.send(attachment)
-          
+        
               }).catch(error => {
                   return (error);
               });
+
       } else if (d === 'quarter') {
         axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&apikey=${params.access_key}`)
-                .then(async response => {
-                console.log('gotta tha response')
+                .then(async response => {                
                 const apiResponse = response.data['Time Series (Daily)'];
-                const dates = Object.keys(apiResponse).slice(0, 67).reverse()
-                const prices = Object.values(apiResponse).slice(0, 67).reverse()
-                let close = []
+                const {dates, closes} = getCloses(apiResponse, 67)
 
-                for (const day in prices) {
-                  console.log(prices[day]['5. adjusted close'])
-                  close.push(prices[day]['5. adjusted close'])
-
-                }
-
-                const attachment = await plot(canvas, ticker, dates, close)
+                const attachment = await plot(canvas, ticker, dates, closes)
 
                 message.channel.send(attachment)
           
               }).catch(error => {
                   return (error);
               })  
+
       } else if (d === 'year') {
         axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${ticker}&outputsize=compact&&apikey=${params.access_key}`)
                 .then(async response => {
-                // console.log('gotta tha response', response)
                 const apiResponse = response.data['Weekly Adjusted Time Series'];
-                const dates = Object.keys(apiResponse).slice(0, 53).reverse()
-                const prices = Object.values(apiResponse).slice(0, 53).reverse()
-                let close = []
-                // console.log(response.data)
-                for (const day in prices) {
-                  console.log(prices[day]['5. adjusted close'])
-                  close.push(prices[day]['5. adjusted close'])
+                const {dates, closes} = getCloses(apiResponse, 53)
 
-                }
-
-                const attachment = await plot(canvas, ticker, dates, close)
+                const attachment = await plot(canvas, ticker, dates, closes)
 
                 message.channel.send(attachment)
           
