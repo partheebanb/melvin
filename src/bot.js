@@ -20,8 +20,8 @@ client.on('ready', async () => {
 
     client.registry
         .registerGroups([
-            ['today', "Commands for today's trading data"],
-            ['x days', "Commands for last x days of trading"]
+            ['data', "Gets trading data for a single security"],
+            ['chart', "Plots charts for one or more securities"]
         ])
         .registerDefaults()
         .registerCommandsIn(path.join(__dirname, 'commands'))
