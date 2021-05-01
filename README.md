@@ -5,14 +5,15 @@ Melvin is a Discord stock bot.
 
 All commands start with the prefix /
 
-    data
-        today/week/month/quarter/year/(number of days)/(date)
-            all/open/last/high/low
-                ticker
-               
-    chart
-        today/week/month/quarter/year/(number of days)/(date)
+data
+    today/week/month/quarter/year/(number of days)/(date)
+        all/open/last/high/low
             ticker
+
+
+chart
+    today/week/month/quarter/year/(number of days)/(date)
+        ticker
 
 
 ## Details
